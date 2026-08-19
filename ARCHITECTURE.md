@@ -33,9 +33,10 @@ flowchart TD
         C --> AU
     end
 
-    C -->|Sense: ALLOW + log| OUT["Response released to user"]
-    C -->|Guide: constrain + retry| OUT
-    C -->|Block: intercept| H["Human handoff"]
+    C -->|"Sense: ALLOW + log"| OUT["Response released to user"]
+    C -->|"Guide: constrain + retry"| G["Constrained response"]
+    G --> OUT
+    C -->|"Block: intercept"| H["Human handoff"]
 ```
 
 ### 1. Detect
