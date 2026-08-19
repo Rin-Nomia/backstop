@@ -25,7 +25,7 @@ flowchart TD
 
     subgraph Pipeline["Backstop Runtime Pipeline"]
         D["1. Detect<br/>User-state classification<br/>(pressure, distress, crisis signals...)"]
-        E["2. Evaluate<br/>Draft-reply risk scan<br/>(refund, discount, compensation,<br/>legal guarantee, policy override,<br/>contract change...)"]
+        E["2. Evaluate<br/>Draft-reply risk scan<br/>(refund, discount, compensation,<br/>legal guarantee, policy override,<br/>contract change)"]
         C["3. Control<br/>Sense / Guide / Block"]
         AU["4. Audit<br/>Immutable decision log"]
         D --> C
