@@ -35,6 +35,7 @@ This isn't an isolated problem. According to a survey published by the Cloud Sec
 No docs to read, no code to write — try it directly in your browser:
 
 - 🎮 **Live Playground**: [rinnomia-continuum-api.hf.space/playground](https://rinnomia-continuum-api.hf.space/playground) — enter a conversation and see Evaluate/Audit decisions with a Before/After comparison in real time
+- 📥 **Report Download**: [rinnomia-continuum-api.hf.space/report-download](https://rinnomia-continuum-api.hf.space/report-download) — select a tenant and download its Risk Report or Shadow Observations (JSON/Markdown)
 
 ---
 
