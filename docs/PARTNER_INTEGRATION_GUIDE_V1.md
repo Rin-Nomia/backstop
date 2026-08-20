@@ -41,7 +41,7 @@ Integrate the API call with `X-Governance-Mode: Shadow` set on every request (or
 This lets you validate the integration itself (are you sending `ai_draft` correctly? is `tenant_id` resolving?) without any risk to production traffic.
 
 ### Stage 2 — Review
-After a observation period (we suggest at least 14 days — see [README.md](../README.md) for the Shadow Mode timeline), pull a report from `GET /api/v1/reports/risk_14d` and review the observed decisions with your team and, if applicable, the end customer's legal/risk stakeholders. This is the point to confirm the policy strictness matches expectations before anything is actually enforced.
+After an observation period (we suggest at least 14 days — see [README.md](../README.md) for the Shadow Mode timeline), pull a report from `GET /api/v1/reports/risk_14d` and review the observed decisions with your team and, if applicable, the end customer's legal/risk stakeholders. This is the point to confirm the policy strictness matches expectations before anything is actually enforced.
 
 ### Stage 3 — Enforce
 Remove `X-Governance-Mode: Shadow` from your requests **and** confirm Profile Shadow is disabled for your tenant on the backend — both conditions need to be met before `final_decision_state` will reflect real enforcement. At this point, `GUIDE` and `BLOCK` decisions will affect what reaches the end user — make sure your integration handles all three states correctly (see below) before flipping this switch.
@@ -60,7 +60,7 @@ Your integration is responsible for acting on `final_decision_state` — Backsto
 
 **Important**: Backstop returns governance decisions and assist fields (`assistant_instruction`, `draft_reference`, `safe_message` where applicable) — but it does not automatically regenerate, substitute, or send a corrected reply on your behalf. Your integration is responsible for the final step: using that guidance to produce a compliant reply, or handing off to a human.
 
-Note that `assistant_instruction` and related enforcement-mode fields are populated when the call is running enforced (not Shadow); in Shadow Mode, the equivalent information surfaces as an *observation* summary (`shadow_explainability`) rather than a live correction directive.
+Note that `assistant_instruction` and related enforcement-mode fields are populated when the call is running enforced (not Shadow); in Shadow Mode, the equivalent information surfaces as an *observation* summary (`shadow_explainability`) rather than a live correction directive. `assistant_instruction` is a structured object (objective, forbidden commitment types, required phrases) intended for your reply-generation logic to consume — it is explicitly marked as reference-only and must never be sent to the end user as-is. See [CONTRACT_V1.md](../CONTRACT_V1.md) for the full field reference.
 
 ---
 
@@ -80,8 +80,6 @@ If a call to Backstop fails (timeout, 5xx error, network issue), **do not fail o
 2. Route the conversation to a human agent.
 
 Treat a failed governance check the same way you'd treat a `BLOCK` — the absence of a clear "yes" should default to caution, not to releasing an unreviewed AI reply.
-
----
 
 ---
 
