@@ -78,6 +78,8 @@ The request body only accepts the fields listed above — unrecognized fields ar
 | `source` | string | optional | `"user"` or `"ai_draft"` — which side of the conversation `text` represents. |
 | `tenant_id` | string | optional | Same behavior as above. |
 
+The response format is the same as `POST /api/v1/analyze_dual` (see below), except `audit_summary.trigger` is fixed to whatever value you passed as `source` rather than being inferred from having both `user_text` and `ai_draft` present.
+
 ---
 
 ## Response: `POST /api/v1/analyze_dual`
@@ -143,6 +145,8 @@ Additional operational reason codes exist for routing, tone, and safety signals 
 
 This list documents the *shape* of reason codes, not the full current set — the underlying rule definitions that generate them are not public. See [ARCHITECTURE.md](./ARCHITECTURE.md) for how these map to governance layers.
 
+**Note on naming convention**: commitment-type codes (`unauthorized_*`) use lower `snake_case`, while tone/crisis-signal codes (`TONE_*`, `OOS_CRISIS`) use `ALL_CAPS`. This reflects the two different originating modules (Evaluate's `commitment_guard` vs. Detect's `classifier`/`safety_gate` — see the module mapping table in [ARCHITECTURE.md](./ARCHITECTURE.md)), not an inconsistency in the API design.
+
 ---
 
 ## Errors
@@ -167,6 +171,8 @@ Query parameters: `tenant_id`, `policy_profile`, `shadow_mode_only`, `limit`. Th
 ```
 GET /api/v1/reports/risk_14d?tenant_id=tenant-a&shadow_mode_only=true&limit=10
 ```
+
+*The example below is a zero-data initial-state sample (a freshly onboarded tenant with no incidents yet) — `deployment_confidence_score` here reflects "nothing has gone wrong in the observed window," not a scoring formula applied to `prevented_risk_count`.*
 
 ```json
 {
