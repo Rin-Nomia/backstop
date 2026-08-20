@@ -91,6 +91,16 @@ https://rinnomia-continuum-api.hf.space
   "observed_final_decision_state": "GUIDE",
   "observed_final_intervention_reason_code": "unauthorized_refund_commitment",
   "observed_final_risk_label": "Unauthorized commitment risk",
+  "user_analysis": {
+    "audit": {
+      "pipeline_version_fingerprint": "88ff8c4d36793534467e58ab019a3b4d993674f205f1bffecbb894a17de7c32d"
+    }
+  },
+  "ai_draft_analysis": {
+    "audit": {
+      "pipeline_version_fingerprint": "88ff8c4d36793534467e58ab019a3b4d993674f205f1bffecbb894a17de7c32d"
+    }
+  },
   "audit_summary": {
     "trigger": "ai_draft",
     "evidence": {},
@@ -118,6 +128,12 @@ https://rinnomia-continuum-api.hf.space
 | `observed_final_decision_state` | `"ALLOW"` \| `"GUIDE"` \| `"BLOCK"` \| `null` | 如果真的執行治理,原本會是什麼決策。Shadow Mode 下會有值;非 Shadow Mode 通常是 `null`。 |
 | `observed_final_intervention_reason_code` | string \| `null` | 機器可讀的原因代碼(見下方〈原因代碼〉)。沒有偵測到風險時為 `null`。 |
 | `observed_final_risk_label` | string | 人類可讀的風險分類。 |
+| `user_analysis.audit.pipeline_version_fingerprint` | string | 一組雜湊值,用來標識目前處理這次請求的規則庫跟語氣分類邏輯是哪個版本。每一次回應(不管 Shadow 或正式執行模式)都會有這個欄位。可以用它來確認你現在測的是哪個部署版本——詳見 [REGRESSION_CHECKLIST_P1.zh-TW.md](./docs/REGRESSION_CHECKLIST_P1.zh-TW.md) 裡怎麼用這個欄位驗證測試結果。 |
+| `ai_draft_analysis.audit.pipeline_version_fingerprint` | string | 跟上面相同,但對應的是 `ai_draft` 那個路徑的分析結果。只有請求裡有帶 `ai_draft` 時才會出現(也就是 `analyze_dual` 呼叫,或是 `analyze` 呼叫且 `source: "ai_draft"` 的情況)。 |
+
+> **為什麼會有兩個「audit」命名空間?** `audit_summary` 是這次請求整體的**決策層級治理記錄**。`user_analysis.audit`(以及雙路徑端點裡的 `ai_draft_analysis.audit`)則是**單一路徑的執行層級溯源資訊**——例如跑的是哪個版本的處理流程、快取/保底機制的行為、耗時等執行層級的中繼資料。`pipeline_version_fingerprint` 屬於「溯源資訊」,不屬於「決策摘要」,這就是為什麼它放在 `*_analysis.audit` 這個命名空間下,而不是放進 `audit_summary` 裡。
+>
+> **穩定性提醒**:`user_analysis.audit` / `ai_draft_analysis.audit` 這兩個命名空間本身是穩定的,但底下的物件結構是開放式的——未來可能會新增或調整欄位。`pipeline_version_fingerprint` 這個欄位本身是穩定、建議使用的,但整合時請用容錯的方式解析這個物件(不要假設欄位清單是固定不變的,遇到不熟悉的欄位或某個非必要欄位缺席時,不要讓整合流程因此失敗)。
 | `audit_summary` | object | Audit 層保留的記錄,詳見下方。 |
 | `audit_summary.trigger` | string | `"user"` / `"ai_draft"` / `"both"`——對話中是哪一方觸發了這次評估。 |
 | `audit_summary.evidence` | object | 結構化的、依來源而異的判斷依據。內部結構不在本公開合約揭露範圍內。 |
@@ -149,6 +165,11 @@ https://rinnomia-continuum-api.hf.space
   "shadow_mode_active": false,
   "final_decision_state": "GUIDE",
   "observed_final_decision_state": null,
+  "user_analysis": {
+    "audit": {
+      "pipeline_version_fingerprint": "88ff8c4d36793534467e58ab019a3b4d993674f205f1bffecbb894a17de7c32d"
+    }
+  },
   "assistant_instruction": {
     "objective": "Provide an empathetic and actionable response without unauthorized commitments.",
     "forbidden_commitments": [
