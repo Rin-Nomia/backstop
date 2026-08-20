@@ -240,6 +240,8 @@ This list documents the *shape* of reason codes, not the full current set — th
 
 ## Reports
 
+Both report endpoints below are also available without writing any code, via a hosted UI at [`/report-download`](https://rinnomia-continuum-api.hf.space/report-download) — select a tenant and download the same data as JSON or Markdown.
+
 ### `GET /api/v1/metrics/shadow_observations`
 
 Query parameters: `tenant_id`, `policy_profile`, `days`, `limit`.
