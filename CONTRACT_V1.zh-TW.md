@@ -128,6 +128,65 @@ https://rinnomia-continuum-api.hf.space
 
 ---
 
+## 回應:正式執行模式(非 Shadow)
+
+當請求以正式執行模式運作(未帶 `X-Governance-Mode: Shadow` 標頭,且該租戶的後端 Profile Shadow 已關閉——詳見 [PARTNER_INTEGRATION_GUIDE_V1.md](./docs/PARTNER_INTEGRATION_GUIDE_V1.md)),且決策為 `GUIDE` 或 `BLOCK` 時,回應會包含上方 Shadow Mode 範例裡沒有的治理輔助欄位。
+
+真實範例(`GUIDE`,正式執行模式):
+
+請求:
+```json
+{
+  "tenant_id": "tenant-a",
+  "user_text": "Please check my order status.",
+  "ai_draft": "I can refund you immediately."
+}
+```
+
+回應(本段相關欄位):
+```json
+{
+  "shadow_mode_active": false,
+  "final_decision_state": "GUIDE",
+  "observed_final_decision_state": null,
+  "assistant_instruction": {
+    "objective": "Provide an empathetic and actionable response without unauthorized commitments.",
+    "forbidden_commitments": [
+      "unauthorized_refund_commitment",
+      "unauthorized_discount_commitment",
+      "unauthorized_compensation_commitment",
+      "unauthorized_legal_guarantee",
+      "unauthorized_policy_override",
+      "unauthorized_contract_change",
+      "mandatory_human_handoff"
+    ],
+    "must_include_phrases": [
+      "I will help you follow the official process.",
+      "If needed, I can connect you with a specialist."
+    ],
+    "focus_reason_codes": ["unauthorized_refund_commitment"],
+    "delivery_mode": "reference_only",
+    "do_not_use_as_final_reply": true
+  },
+  "draft_reference": "This request may involve a commitment beyond assistant authority. Please follow official policy and authorized review flow.",
+  "safe_message": null,
+  "audit_summary": {
+    "trigger": "ai_draft",
+    "risk": "Unauthorized commitment risk",
+    "timestamp": "2026-08-20T08:08:37.474422+00:00",
+    "reason_code": "unauthorized_refund_commitment"
+  }
+}
+```
+
+| 欄位 | 型別 | 說明 |
+|---|---|---|
+| `assistant_instruction` | object \| `null` | 正式執行模式下,`GUIDE`/`BLOCK` 時會有值。是一份結構化的修正指引——目標、禁止出現的承諾類型、必要措辭、對應的原因代碼。`delivery_mode: "reference_only"` 跟 `do_not_use_as_final_reply: true` 一定會出現:**這個物件是用來輔助重新產生回覆的參考資料,絕對不是可以直接送出的回覆本身。** Shadow Mode 下為 `null`(改看 `audit_summary.shadow_explainability`)。 |
+| `draft_reference` | string \| `null` | 用於重新產生回覆的參考文字。這段文字通常是經過治理處理過的改寫版本,不一定會等同於你原本傳入的 `ai_draft`——不要假設兩者相同。 |
+| `safe_message` | string \| `null` | 正式執行模式下的 `BLOCK` 決策會有值(系統層級有預設的保底訊息)。`GUIDE`/`ALLOW` 時通常是 `null`,Shadow Mode 的觀察結果裡也一律是 `null`。 |
+
+---
+
 ## 原因代碼
 
 原因代碼依 Evaluate 層檢查的六大類未授權承諾分組:
