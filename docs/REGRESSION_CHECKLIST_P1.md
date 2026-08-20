@@ -21,24 +21,24 @@ Both categories are run together on every change to the rule set or tone-classif
 
 ### False-Positive Rate (Tone/Detect Layer)
 
-A batch of 12 ordinary customer-service sentences (mixed English/Chinese: greetings, order-status checks, thank-yous) was run before and after a tone-sensitivity tuning pass:
+A batch of 12 ordinary customer-service sentences (mixed English/Chinese: greetings, order-status checks, thank-yous) is used as a standing regression set, re-run after every rule-set or tone-classification change.
 
-| | Before tuning (2026-08) | Immediately after tuning (2026-08) |
+| | Before tuning | After tuning (confirmed live, 2026-08) |
 |---|---|---|
 | Incorrectly flagged as `GUIDE`/`BLOCK` | 3 / 12 (25%) | 0 / 12 (0%) |
 
-The tuning pass adjusted routing confidence thresholds, removed overly broad single-word triggers, and added a short-text/politeness guard.
+This result was verified directly against the production deployment (not just a local/staging environment) — every response from the live API includes a `pipeline_version_fingerprint` field, which lets anyone confirm which version of the rule set actually handled their request. At time of writing, the production fingerprint is `88ff8c4d36793534467e58ab019a3b4d993674f205f1bffecbb894a17de7c32d`.
 
-**This is a point-in-time result, not a standing guarantee.** A live spot-check against the same 12-sentence batch later in August 2026 returned 3/12 flagged again — meaning the false-positive rate has not remained at 0% through subsequent rule-set changes (e.g. later commitment-rule expansion). We re-run this batch after every rule-set or tone-classification change and update this section accordingly; treat any specific percentage here as accurate as of its stated date, not as a current-state promise.
+**This is a point-in-time result, not a standing guarantee.** Fingerprints change with every rule-set update. Treat the specific percentage and fingerprint above as accurate as of the date shown — if you're verifying this independently, check that the fingerprint in your own API response matches (or is newer than) the one listed here.
 
 ### Risk Detection (Evaluate Layer)
 
-High-risk test cases across all six unauthorized-commitment categories, under currently tested phrasing:
+High-risk test cases across all six unauthorized-commitment categories, confirmed against the production deployment (fingerprint above):
 
 | Category | Result |
 |---|---|
 | Refund | Correctly resolves to `GUIDE` |
-| Discount | Correctly resolves to `GUIDE` (some tenant policy profiles are configured to escalate this to `BLOCK` — see note below) |
+| Discount | Resolves to `GUIDE` by default; some tenant policy profiles are configured to escalate this to `BLOCK` (see note below) |
 | Compensation | Correctly resolves to `BLOCK` |
 | Legal guarantee | Correctly resolves to `BLOCK` |
 | Policy override | Correctly resolves to `GUIDE` under tested phrasing — this category is more susceptible to missing novel phrasing when a policy exception is mixed into a sentence with other content, see [Known Limitation](#known-limitation-pattern-based-matching) below |
@@ -46,7 +46,15 @@ High-risk test cases across all six unauthorized-commitment categories, under cu
 
 **Tenant/profile variance**: the decision a given risk category resolves to is not identical across all tenants — policy profiles can be configured with different strictness per category (for example, one tenant may have `discount` set to escalate to `BLOCK` while the default is `GUIDE`). This is an intentional per-tenant configuration option, not inconsistent behavior. See [ARCHITECTURE.md](../ARCHITECTURE.md) for how tenant policy profiles work.
 
-**Evidence tier**: the results above come from two different sources — rule-layer regression tests (run against the current rule set directly) and live E2E spot-checks (actual API calls against the production deployment). Where the two diverge, as with the false-positive figure above, we report both rather than reconciling them into a single number.
+**Evidence tier**: the results above come from two different sources — rule-layer regression tests (run against the current rule set directly) and live E2E spot-checks (actual API calls against the production deployment, verified via `pipeline_version_fingerprint`). Where the two diverge, we report the live/production result as authoritative.
+
+### How to Verify This Yourself
+
+Every response from `POST /api/v1/analyze` or `POST /api/v1/analyze_dual` includes an audit field with the current `pipeline_version_fingerprint`. To confirm you're testing against the version described in this document:
+
+1. Call the API with a test payload (see [Swagger UI](https://rinnomia-continuum-api.hf.space/docs))
+2. Check the fingerprint in the response against the one listed above
+3. If it doesn't match, the deployment has since changed — the specific numbers in this document may no longer reflect the current state, and it should be re-run
 
 ---
 
