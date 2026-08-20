@@ -20,7 +20,7 @@ Backstop 是一層獨立於 LLM 底層之外的 Runtime Enforcement Gateway(執�
 
 退款、折扣、法律保證、政策例外——AI 在高壓對話裡很容易做出企業沒有授權的承諾。說出去之後,沒有記錄,沒有人知道為什麼。
 
-這不是個案。根據 Cloud Security Alliance 2026 年 4 月發布的調查 [^1],53% 的組織已經遇過 AI Agent 超出預期權限的情況。OWASP 將這個現象正式定義為 **Excessive Agency**,是當前 LLM 部署的主要風險類別之一。 
+這不是個案。根據 Cloud Security Alliance 2026 年 4 月發布的調查 [^1],53% 的組織已經遇過 AI Agent 超出預期權限的情況。OWASP 將這個現象正式定義為 **Excessive Agency**,是當前 LLM 部署的主要風險類別之一。
 
 **對於把 AI 交付給金融、醫療等高合規產業客戶的 SI 或 AI 平台公司來說,這個問題更直接:每接一個新客戶,就要重寫一次風控規則;出事之後,沒有記錄可以說清楚當時發生了什麼——這正是專案卡在客戶法務/風控驗收關卡、尾款卡住的主因。**
 
@@ -33,6 +33,7 @@ Backstop 是一層獨立於 LLM 底層之外的 Runtime Enforcement Gateway(執�
 不用讀文件、不用寫程式,直接在瀏覽器體驗:
 
 - 🎮 **Live Playground**:[rinnomia-continuum-api.hf.space/playground](https://rinnomia-continuum-api.hf.space/playground) — 直接輸入對話,即時看到 Evaluate/Audit 判斷結果與 Before/After 對照
+- 📥 **報告下載頁**:[rinnomia-continuum-api.hf.space/report-download](https://rinnomia-continuum-api.hf.space/report-download) — 選擇租戶,直接下載 Risk Report 或 Shadow Observations(JSON/Markdown 格式)
 
 ---
 
