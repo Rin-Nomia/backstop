@@ -240,6 +240,8 @@ https://rinnomia-continuum-api.hf.space
 
 ## 報告端點
 
+以下兩個報告端點,也都能不寫任何程式碼、直接透過網頁介面使用——[`/report-download`](https://rinnomia-continuum-api.hf.space/report-download) 這個頁面可以選擇租戶,下載同樣的資料(JSON 或 Markdown 格式)。
+
 ### `GET /api/v1/metrics/shadow_observations`
 
 查詢參數:`tenant_id`、`policy_profile`、`days`、`limit`。
