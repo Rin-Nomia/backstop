@@ -128,6 +128,65 @@ The response format is the same as `POST /api/v1/analyze_dual` (see below), exce
 
 ---
 
+## Response: Enforced Mode (not Shadow)
+
+When a call runs in enforced mode (no `X-Governance-Mode: Shadow` header, and Profile Shadow disabled for the tenant — see [PARTNER_INTEGRATION_GUIDE_V1.md](./docs/PARTNER_INTEGRATION_GUIDE_V1.md)) and the decision is `GUIDE` or `BLOCK`, the response includes governance-assist fields not present in the Shadow Mode example above.
+
+Real example (`GUIDE`, enforced mode):
+
+Request:
+```json
+{
+  "tenant_id": "tenant-a",
+  "user_text": "Please check my order status.",
+  "ai_draft": "I can refund you immediately."
+}
+```
+
+Response (fields relevant to this section):
+```json
+{
+  "shadow_mode_active": false,
+  "final_decision_state": "GUIDE",
+  "observed_final_decision_state": null,
+  "assistant_instruction": {
+    "objective": "Provide an empathetic and actionable response without unauthorized commitments.",
+    "forbidden_commitments": [
+      "unauthorized_refund_commitment",
+      "unauthorized_discount_commitment",
+      "unauthorized_compensation_commitment",
+      "unauthorized_legal_guarantee",
+      "unauthorized_policy_override",
+      "unauthorized_contract_change",
+      "mandatory_human_handoff"
+    ],
+    "must_include_phrases": [
+      "I will help you follow the official process.",
+      "If needed, I can connect you with a specialist."
+    ],
+    "focus_reason_codes": ["unauthorized_refund_commitment"],
+    "delivery_mode": "reference_only",
+    "do_not_use_as_final_reply": true
+  },
+  "draft_reference": "This request may involve a commitment beyond assistant authority. Please follow official policy and authorized review flow.",
+  "safe_message": null,
+  "audit_summary": {
+    "trigger": "ai_draft",
+    "risk": "Unauthorized commitment risk",
+    "timestamp": "2026-08-20T08:08:37.474422+00:00",
+    "reason_code": "unauthorized_refund_commitment"
+  }
+}
+```
+
+| Field | Type | Notes |
+|---|---|---|
+| `assistant_instruction` | object \| `null` | Populated in enforced mode on `GUIDE`/`BLOCK`. A structured correction directive — objective, forbidden commitment types, required phrases, and the reason codes it's addressing. `delivery_mode: "reference_only"` and `do_not_use_as_final_reply: true` are always present: **this object is guidance for regenerating a reply, never the reply itself.** `null` in Shadow Mode (see `audit_summary.shadow_explainability` instead). |
+| `draft_reference` | string \| `null` | A reference text string for regeneration. It is often a governed rewrite rather than an echo of the original `ai_draft` — do not assume it equals what you sent in. |
+| `safe_message` | string \| `null` | Populated for enforced `BLOCK` decisions (a default fallback exists at the system level). Typically `null` for `GUIDE`/`ALLOW`, and always `null` in Shadow Mode observations. |
+
+---
+
 ## Reason Codes
 
 Reason codes are grouped by the six unauthorized-commitment categories the Evaluate layer checks for:
