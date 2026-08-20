@@ -91,6 +91,16 @@ The response format is the same as `POST /api/v1/analyze_dual` (see below), exce
   "observed_final_decision_state": "GUIDE",
   "observed_final_intervention_reason_code": "unauthorized_refund_commitment",
   "observed_final_risk_label": "Unauthorized commitment risk",
+  "user_analysis": {
+    "audit": {
+      "pipeline_version_fingerprint": "88ff8c4d36793534467e58ab019a3b4d993674f205f1bffecbb894a17de7c32d"
+    }
+  },
+  "ai_draft_analysis": {
+    "audit": {
+      "pipeline_version_fingerprint": "88ff8c4d36793534467e58ab019a3b4d993674f205f1bffecbb894a17de7c32d"
+    }
+  },
   "audit_summary": {
     "trigger": "ai_draft",
     "evidence": {},
@@ -118,6 +128,12 @@ The response format is the same as `POST /api/v1/analyze_dual` (see below), exce
 | `observed_final_decision_state` | `"ALLOW"` \| `"GUIDE"` \| `"BLOCK"` \| `null` | What the decision would have been if enforced. Populated in Shadow Mode; typically `null` outside Shadow Mode. |
 | `observed_final_intervention_reason_code` | string \| `null` | Machine-readable reason (see [Reason Codes](#reason-codes) below). `null` when no risk is detected. |
 | `observed_final_risk_label` | string | Human-readable risk category. |
+| `user_analysis.audit.pipeline_version_fingerprint` | string | A hash identifying which version of the rule set and tone-classification logic handled this request. Present on every response (both Shadow and enforced mode). Use this to confirm which deployed version you're testing against — see [REGRESSION_CHECKLIST_P1.md](./docs/REGRESSION_CHECKLIST_P1.md) for how this is used to verify reported test results. |
+| `ai_draft_analysis.audit.pipeline_version_fingerprint` | string | Same as above, for the `ai_draft` analysis path. Only present when `ai_draft` was supplied in the request (i.e. on `analyze_dual` calls, or `analyze` calls with `source: "ai_draft"`). |
+
+> **Why two "audit" namespaces?** `audit_summary` is the decision-level governance record for the request as a whole. `user_analysis.audit` (and, on the dual-path endpoint, `ai_draft_analysis.audit`) is per-path *runtime provenance* — execution-level metadata like which pipeline version ran, cache/fallback behavior, and timing. `pipeline_version_fingerprint` belongs to provenance, not to the decision summary, which is why it lives in the `*_analysis.audit` namespace rather than inside `audit_summary`.
+>
+> **Stability note**: the `user_analysis.audit` / `ai_draft_analysis.audit` namespaces themselves are stable, but the object underneath is an open structure — additional fields may be added or adjusted over time. `pipeline_version_fingerprint` specifically is stable and recommended for use, but integrations should parse this object defensively (don't assume an exhaustive, fixed field list, and don't fail if an unfamiliar field appears or a non-essential one is absent).
 | `audit_summary` | object | The record retained for Audit. See below. |
 | `audit_summary.trigger` | string | `"user"` / `"ai_draft"` / `"both"` — which side of the conversation triggered the evaluation. |
 | `audit_summary.evidence` | object | Structured, source-specific evidence supporting the decision. Internal structure not part of this public contract. |
@@ -149,6 +165,11 @@ Response (fields relevant to this section):
   "shadow_mode_active": false,
   "final_decision_state": "GUIDE",
   "observed_final_decision_state": null,
+  "user_analysis": {
+    "audit": {
+      "pipeline_version_fingerprint": "88ff8c4d36793534467e58ab019a3b4d993674f205f1bffecbb894a17de7c32d"
+    }
+  },
   "assistant_instruction": {
     "objective": "Provide an empathetic and actionable response without unauthorized commitments.",
     "forbidden_commitments": [
