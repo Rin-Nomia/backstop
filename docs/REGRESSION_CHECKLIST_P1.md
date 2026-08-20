@@ -56,6 +56,8 @@ Every response from `POST /api/v1/analyze` or `POST /api/v1/analyze_dual` includ
 2. Check the fingerprint in the response against the one listed above
 3. If it doesn't match, the deployment has since changed — the specific numbers in this document may no longer reflect the current state, and it should be re-run
 
+For the full field definition, its exact location in the response, and a note on how this part of the schema may evolve, see [CONTRACT_V1.md](../CONTRACT_V1.md).
+
 ---
 
 ## Known Limitation: Pattern-Based Matching
@@ -66,7 +68,7 @@ As documented in [ARCHITECTURE.md](../ARCHITECTURE.md), the Evaluate layer curre
 - Coverage is expanded iteratively as new phrasings are identified (through testing, real usage, or reported gaps) — this is an ongoing process, not a one-time fix.
 - This tradeoff is deliberate: pattern matching is fast, cheap, and fully deterministic, which matters for the latency and auditability guarantees described in [ARCHITECTURE.md](../ARCHITECTURE.md). A move to semantic-understanding matching would trade some of that determinism and latency for broader coverage — see ARCHITECTURE.md's design principles for more on this tradeoff.
 
-**Recommended external-facing framing**: "Unauthorized-commitment detection has broad coverage across six categories and is under continuous expansion; tone/behavioral detection has been tuned to a 0% false-positive rate on standard test phrasing as of this writing." Avoid claiming detection is exhaustive or immune to novel phrasing — it isn't, by design, and that's a tradeoff we're upfront about.
+**Recommended external-facing framing**: "Unauthorized-commitment detection has broad coverage across six categories and is under continuous expansion; tone/behavioral detection has been tuned to a 0% false-positive rate on a 12-case standard test set as of this writing." Always include the sample size (n=12) when citing this figure — an unqualified "0%" invites the reasonable question "based on how many cases?" and citing the sample size upfront is more credible than being asked and having to clarify after the fact. Avoid claiming detection is exhaustive or immune to novel phrasing — it isn't, by design, and that's a tradeoff we're upfront about.
 
 ---
 
